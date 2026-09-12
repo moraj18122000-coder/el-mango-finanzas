@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="El Mango" />
+  <meta name="theme-color" content="#f3efe6" />
+  <title>El Mango · Finanzas</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <style>
+    :root {
+      --bg: #f3efe6; --paper: #fffdf8; --ink: #1b1712; --muted: #6d6558;
+      --line: #e3d8c6; --green: #2c6a44; --red: #9a3a24; --chip: #eee4d4;
+      --safe: env(safe-area-inset-top); --safeb: env(safe-area-inset-bottom);
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg); color: var(--ink);
+      padding-top: var(--safe);
+      padding-bottom: calc(120px + var(--safeb));
+    }
+    .hero, .panel {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 16px; margin: 0 16px 10px; padding: 14px;
+    }
+    .hero .mini {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+      font-size: 13px;
+    }
+    .hero .mini div { background: var(--chip); border-radius: 10px; padding: 8px; }
+    .hero .mini b { display: block; font-size: 11px; color: var(--muted); font-weight: 650; }
+    .row span:first-child { flex: 1; min-width: 0; word-break: break-word; }
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 10px; -webkit-overflow-scrolling: touch; }
+    .dock {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: var(--paper); border-top: 1px solid var(--line);
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      padding: 8px 2px calc(14px + var(--safeb)); z-index: 5;
+    }
+    .dock button { border: 0; background: none; font-size: 12px; font-weight: 700; color: var(--muted); padding: 8px 2px; line-height: 1.15; }
+    header { padding: 12px 16px 6px; }
+    header h1 { margin: 0; font-size: 22px; letter-spacing: -0.03em; }
+    header p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .hero, .panel {
+      background: var(--paper); border: 1px solid var(--line);
+      border-radius: 16px; margin: 0 16px 10px; padding: 14px;
+    }
+    .hero b { color: var(--muted); font-size: 12px; }
+    .hero .big { font-size: 30px; font-weight: 800; letter-spacing: -0.04em; margin: 4px 0; }
+    .up { color: var(--green); } .down { color: var(--red); }
+    .muted { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .row { display: flex; justify-content: space-between; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .row:last-child { border-bottom: 0; }
+    .chips { display: flex; gap: 6px; overflow-x: auto; padding: 0 16px 10px; }
+    .chips button, .seg button, .item button, .btn, .ghost {
+      appearance: none; border: 1px solid var(--line); background: #fff;
+      border-radius: 999px; padding: 8px 12px; font-weight: 650; font-size: 13px;
+    }
+    .chips button.on, .seg button.on { background: var(--ink); color: #fffdf8; border-color: var(--ink); }
+    .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+    .seg button { border-radius: 12px; }
+    .item {
+      display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center;
+      padding: 10px 0; border-bottom: 1px solid var(--line);
+    }
+    .item h3 { margin: 0; font-size: 15px; } .item small { color: var(--muted); }
+    .step { display: flex; align-items: center; gap: 8px; }
+    .step button { width: 36px; height: 36px; border-radius: 10px; font-size: 18px; }
+    .qty { min-width: 24px; text-align: center; font-weight: 800; }
+    label { display: block; font-size: 12px; color: var(--muted); font-weight: 650; margin: 10px 0 4px; }
+    input, select, textarea {
+      width: 100%; font-size: 16px; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--line); background: #fff; font-family: inherit;
+    }
+    textarea { min-height: 70px; }
+    .btn { width: 100%; margin-top: 10px; border-radius: 12px; padding: 12px; font-size: 15px; background: var(--ink); color: #fff; border: 0; }
+    .btn.red { background: var(--red); }
+    .ghost { width: 100%; margin-top: 8px; background: var(--chip); border: 0; border-radius: 12px; padding: 11px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { text-align: left; padding: 8px 4px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    .del { border: 0; background: none; color: var(--red); font-weight: 700; }
+    .dock {
+      position: fixed; left: 0; right: 0; bottom: 0;
+      background: var(--paper); border-top: 1px solid var(--line);
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      padding: 8px 2px calc(14px + var(--safeb)); z-index: 5;
+    }
+    .dock button { border: 0; background: none; font-size: 12px; font-weight: 700; color: var(--muted); padding: 8px 2px; line-height: 1.15; }
+    .dock button.on { color: var(--ink); }
+    .warn { background: #f8eadf; border-radius: 12px; padding: 10px; font-size: 13px; margin-top: 8px; }
+    .ok { background: #e3f0e7; border-radius: 12px; padding: 10px; font-size: 13px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 id="titulo">El Mango</h1>
+    <p>6:00 a 14:00 · desayunos y almuerzos</p>
+  </header>
+  <div class="hero">
+    <b>Ganancia neta <span id="rangoTxt">esta quincena</span></b>
+    <div class="big" id="kNet">₡0</div>
+    <div class="muted" id="formula"></div>
+    <div class="mini">
+      <div><b>Se vendió</b><span id="kIn">₡0</span></div>
+      <div><b>Gastos fijos</b><span id="kFijos">₡0</span></div>
+      <div><b>Gastos variables</b><span id="kVar">₡0</span></div>
+      <div><b>Quincena</b><span id="kQuinLabel">1–15</span></div>
+    </div>
+  </div>
+  <div class="chips" id="rangos">
+    <button data-r="quin" class="on">Quincena</button>
+    <button data-r="hoy">Hoy</button>
+    <button data-r="semana">Semana</button>
+    <button data-r="mes">Mes</button>
+  </div>
+
+  <section id="v-hoy">
+    <div class="panel">
+      <strong>Venta total (sin marcar platos)</strong>
+      <p class="muted">Si ya sabes cuánto se vendió, pon el monto. No hace falta tocar cada pinto o casado.</p>
+      <label>¿De qué turno?</label>
+      <select id="vtTurno">
+        <option value="dia">Todo el día</option>
+        <option value="desayuno">Solo desayuno</option>
+        <option value="almuerzo">Solo almuerzo</option>
+      </select>
+      <label>Monto total vendido (colones)</label>
+      <input id="vtMonto" type="number" inputmode="numeric" min="0" placeholder="Ej. 185000" />
+      <label>Nota (opcional)</label>
+      <input id="vtNota" placeholder="Ej. corte de caja, efectivo + tarjeta" />
+      <button class="btn" id="vtSave">Guardar venta total</button>
+      <div id="vtLista"></div>
+    </div>
+    <div class="panel">
+      <strong>O contar plato por plato</strong>
+      <div class="seg" id="turnoSeg">
+        <button class="on" data-t="desayuno">Desayuno 6–10</button>
+        <button data-t="almuerzo">Almuerzo 11–14</button>
+      </div>
+      <div id="menu"></div>
+      <div class="muted" id="turnoTotal" style="margin-top:10px"></div>
+    </div>
+  </section>
+
+  <section id="v-gastos" hidden>
+    <div class="panel">
+      <strong>Gasto a mano (sin factura)</strong>
+      <p class="muted">Para mercado, gas, un mandado, o cualquier salida de plata cuando no hay XML ni foto.</p>
+      <label>Tipo</label>
+      <select id="gTipo">
+        <option value="suministro">Suministros / mercado</option>
+        <option value="imprevisto">Imprevisto</option>
+        <option value="otro">Otro</option>
+      </select>
+      <label>Fecha</label><input id="gFecha" type="date" />
+      <label>Monto (colones)</label><input id="gMonto" type="number" inputmode="numeric" min="0" placeholder="Ej. 45000" />
+      <label>Qué se pagó</label><input id="gNota" placeholder="Ej. verduras, cloro, taxi, arreglo de refri" />
+      <button class="btn" id="gSave">Guardar gasto</button>
+    </div>
+    <div class="panel">
+      <strong>Gastos fijos del mes</strong>
+      <div class="muted">Se cuentan solos en el balance. Cámbialos en Ajustes si suben.</div>
+      <div id="fijosBox"></div>
+    </div>
+    <div class="panel">
+      <strong>Movimientos</strong>
+      <div id="gLista"></div>
+    </div>
+  </section>
+
+  <section id="v-fiados" hidden>
+    <div class="panel">
+      <strong>Quien debe</strong>
+      <label>Nombre</label><input id="fNombre" placeholder="Cliente" />
+      <label>Monto</label><input id="fMonto" type="number" inputmode="numeric" min="0" />
+      <label>Nota</label><input id="fNota" placeholder="Ej. 2 casados del martes" />
+      <button class="btn" id="fSave">Anotar deuda</button>
+    </div>
+    <div class="panel" id="fiadosLista"></div>
+  </section>
+
+  <section id="v-numeros" hidden>
+    <div class="panel" id="balanza"></div>
+    <div class="panel" id="metas"></div>
+    <div class="panel" id="ventasCat"></div>
+  </section>
+
+  <section id="v-mas" hidden>
+    <div class="panel">
+      <strong>Facturas electrónicas</strong>
+      <p class="muted">Galería o Archivos. Una foto se intenta leer (total y proveedor). El XML de Hacienda sale más exacto.</p>
+      <label>Proveedor</label><input id="faProv" placeholder="Ej. Mayoreo, ICE, municipalidad" />
+      <label>Monto</label><input id="faMonto" type="number" inputmode="numeric" />
+      <label>Fecha</label><input id="faFecha" type="date" />
+      <label>Pegar texto del correo</label>
+      <textarea id="faTexto" placeholder="Pega aquí el correo o la factura"></textarea>
+      <button class="ghost" id="faLeer">Leer montos del texto</button>
+      <p class="muted" id="faArchivoNom"></p>
+      <button class="ghost" type="button" id="btnGaleria">Elegir de galería o Archivos (XML, PDF, foto)</button>
+      <button class="ghost" type="button" id="btnCamara">Tomar foto</button>
+      <input id="faGaleria" type="file" accept="image/*,application/pdf,.pdf,.xml,text/xml" multiple hidden />
+      <input id="faCamara" type="file" accept="image/*" capture="environment" hidden />
+      <label><input type="checkbox" id="faGasto" checked /> También registrarlo como gasto de suministros</label>
+      <button class="btn" id="faSave">Guardar factura</button>
+    </div>
+    <div class="panel" id="faLista"></div>
+    <div class="panel">
+      <strong>Correo Gmail (facturas)</strong>
+      <p class="muted" id="correoHint"></p>
+    </div>
+    <div class="panel">
+      <strong>Ajustes</strong>
+      <label>Nombre de la soda</label><input id="nombre" />
+      <label>Correo (facturas)</label><input id="correo" type="email" />
+      <button class="ghost" id="saveNom">Guardar nombre y correo</button>
+      <button class="ghost" id="exportar">Exportar Excel (CSV)</button>
+      <button class="ghost" id="borrar" style="color:var(--red)">Borrar datos</button>
+    </div>
+  </section>
+
+  <nav class="dock">
+    <button class="on" data-v="hoy">Hoy</button>
+    <button data-v="gastos">Gastos</button>
+    <button data-v="fiados">Fiados</button>
+    <button data-v="numeros">Números</button>
+    <button data-v="mas">Más</button>
+  </nav>
+
+<script>
+const KEY = "soda-cr-v1";
+const MENU = {
+  desayuno: [
+    { id: "pinto-eco", n: "Pinto económico", p: 2000, extra: true },
+    { id: "pinto-pollo", n: "Pinto con pollo en salsa", p: 3000, extra: true },
+    { id: "pinto-carne", n: "Pinto con carne en salsa", p: 3000, extra: true },
+    { id: "pinto-1", n: "Pinto 1 acompañamiento", p: 2500, extra: true },
+    { id: "emparedado", n: "Emparedado", p: 2500 },
+    { id: "empanada", n: "Empanada", p: 1500 },
+    { id: "burrito", n: "Burrito", p: 2000 },
+    { id: "cafe", n: "Café", p: 700 },
+    { id: "fresco", n: "Fresco", p: 1000 }
+  ],
+  almuerzo: [
+    { id: "casado", n: "Casado", p: 4000 },
+    { id: "arroz-camaron", n: "Arroz con camarón", p: 5000 },
+    { id: "arroz-pollo", n: "Arroz con pollo", p: 4000 },
+    { id: "papi-carne", n: "Papi carne", p: 3500 },
+    { id: "tacos", n: "Tacos", p: 2500 }
+  ]
+};
+const EXTRA = 500;
+const FIJOS = { luz: 100000, municipalidad: 30000, gas: 27000, salarios: 1500000, diasLibres: 120000 };
+const AGUINALDO_MES = 1500000 / 12;
+const SUELDO_DUENO = 500000;
+
+function todayISO() {
+  const d = new Date();
+  return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function colones(n) {
+  const s = Math.round(n || 0).toLocaleString("es-CR");
+  return (n < 0 ? "-" : "") + "₡" + s.replace("-", "");
+}
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 5); }
+function load() {
+  try {
+    const r = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (r && r.conteos) {
+      if (!r.nombre || r.nombre === "Soda" || r.nombre === "Mi restaurante") r.nombre = "El Mango";
+      if (!r.correo) r.correo = "moraj18122000@gmail.com";
+      if (!r.ventasExtra) r.ventasExtra = [];
+      return r;
+    }
+  } catch (e) {}
+  return { nombre: "El Mango", correo: "moraj18122000@gmail.com", conteos: {}, ventasExtra: [], gastos: [], facturas: [], fiados: [] };
+}
+const S = load();
+let rango = "quin", turno = "desayuno", fotoData = "";
+
+function persist() { localStorage.setItem(KEY, JSON.stringify(S)); }
+function day(fecha) {
+  if (!S.conteos[fecha]) S.conteos[fecha] = { desayuno: {}, almuerzo: {} };
+  return S.conteos[fecha];
+}
+function line(fecha, t, id) {
+  const d = day(fecha);
+  if (!d[t][id]) d[t][id] = { qty: 0, extras: 0 };
+  return d[t][id];
+}
+function itemById(t, id) { return MENU[t].find(x => x.id === id); }
+function ventaLinea(t, id, rec) {
+  const it = itemById(t, id);
+  if (!it) return 0;
+  return it.p * rec.qty + EXTRA * (rec.extras || 0);
+}
+function ventasFecha(fecha) {
+  const d = S.conteos[fecha];
+  let tot = 0;
+  if (d) {
+    for (const t of ["desayuno", "almuerzo"]) {
+      for (const id of Object.keys(d[t] || {})) tot += ventaLinea(t, id, d[t][id]);
+    }
+  }
+  tot += (S.ventasExtra || []).filter(v => v.fecha === fecha).reduce((a, v) => a + v.monto, 0);
+  return tot;
+}
+function startWeek(iso) {
+  const d = new Date(iso + "T12:00:00");
+  const dayN = d.getDay() || 7;
+  d.setDate(d.getDate() - dayN + 1);
+  return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+}
+function fechasRango() {
+  const t = todayISO();
+  const [y, m] = t.split("-");
+  const dia = Number(t.slice(8, 10));
+  const lastMes = new Date(Number(y), Number(m), 0).getDate();
+  function days(a, b) {
+    const out = [];
+    for (let i = a; i <= b; i++) out.push(`${y}-${m}-${String(i).padStart(2, "0")}`);
+    return out;
+  }
+  if (rango === "hoy") return [t];
+  if (rango === "semana") {
+    const a = startWeek(t), out = [];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(a + "T12:00:00"); d.setDate(d.getDate() + i);
+      const iso = new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+      if (iso <= t) out.push(iso);
+    }
+    return out;
+  }
+  if (rango === "quin") {
+    if (dia <= 15) return days(1, dia);
+    return days(16, dia);
+  }
+  return days(1, dia);
+}
+function etiquetaQuincena() {
+  const dia = Number(todayISO().slice(8, 10));
+  const last = new Date(Number(todayISO().slice(0,4)), Number(todayISO().slice(5,7)), 0).getDate();
+  return dia <= 15 ? "1–15" : "16–" + last;
+}
+function ventasRango() { return fechasRango().reduce((a, f) => a + ventasFecha(f), 0); }
+function gastosRango(tipo) {
+  const set = new Set(fechasRango());
+  return S.gastos.filter(g => set.has(g.fecha) && (!tipo || g.tipo === tipo)).reduce((a, g) => a + g.monto, 0);
+}
+function fijosDelPeriodo() {
+  const mes = FIJOS.luz + FIJOS.municipalidad + FIJOS.gas + FIJOS.salarios + FIJOS.diasLibres;
+  if (rango === "mes") return mes;
+  if (rango === "quin") return mes / 2;
+  if (rango === "semana") return mes / 4.3;
+  return mes / 30;
+}
+function aguinaldoPeriodo() {
+  if (rango === "mes") return AGUINALDO_MES;
+  if (rango === "quin") return AGUINALDO_MES / 2;
+  if (rango === "semana") return AGUINALDO_MES / 4.3;
+  return AGUINALDO_MES / 30;
+}
+function duenoPeriodo() {
+  if (rango === "mes") return SUELDO_DUENO;
+  if (rango === "quin") return SUELDO_DUENO / 2;
+  if (rango === "semana") return SUELDO_DUENO / 4.3;
+  return SUELDO_DUENO / 30;
+}
+
+function calc() {
+  const ventas = ventasRango();
+  const suministros = gastosRango("suministro");
+  const imprevistos = gastosRango("imprevisto");
+  const otros = gastosRango("otro");
+  const fijos = fijosDelPeriodo();
+  const operativa = ventas - suministros - imprevistos - otros - fijos;
+  const agui = aguinaldoPeriodo();
+  const dueno = duenoPeriodo();
+  const reinversion = operativa - agui - dueno;
+  const deben = S.fiados.reduce((a, f) => a + (f.saldo || 0), 0);
+  return { ventas, suministros, imprevistos, otros, fijos, operativa, agui, dueno, reinversion, deben };
+}
+
+function renderHero() {
+  const c = calc();
+  const labels = { hoy: "hoy", semana: "esta semana", quin: "esta quincena", mes: "este mes" };
+  document.getElementById("rangoTxt").textContent = labels[rango];
+  const el = document.getElementById("kNet");
+  el.textContent = colones(c.operativa);
+  el.className = "big " + (c.operativa >= 0 ? "up" : "down");
+  document.getElementById("formula").textContent =
+    "Ventas − gastos fijos (luz, gas, muni, salarios, días libres) − gastos del período";
+  document.getElementById("kIn").textContent = colones(c.ventas);
+  document.getElementById("kFijos").textContent = colones(c.fijos);
+  document.getElementById("kVar").textContent = colones(c.suministros + c.imprevistos + c.otros);
+  document.getElementById("kQuinLabel").textContent = etiquetaQuincena();
+  document.getElementById("titulo").textContent = S.nombre;
+}
+
+function renderMenu() {
+  const fecha = todayISO();
+  const box = document.getElementById("menu");
+  box.innerHTML = MENU[turno].map(it => {
+    const rec = line(fecha, turno, it.id);
+    return `<div class="item">
+      <div><h3>${it.n}</h3><small>${colones(it.p)}${it.extra ? " · extra ₡500 (huevo, salchichón, queso)" : ""}</small>
+      ${it.extra ? `<div class="step" style="margin-top:6px"><span class="muted">Extras</span>
+        <button data-ex="-" data-id="${it.id}">−</button><span class="qty">${rec.extras}</span>
+        <button data-ex="+" data-id="${it.id}">+</button></div>` : ""}</div>
+      <div class="step">
+        <button data-q="-" data-id="${it.id}">−</button>
+        <span class="qty">${rec.qty}</span>
+        <button data-q="+" data-id="${it.id}">+</button>
+      </div>
+    </div>`;
+  }).join("");
+  const d = day(fecha)[turno];
+  let tot = 0, platos = 0;
+  Object.keys(d).forEach(id => { tot += ventaLinea(turno, id, d[id]); platos += d[id].qty; });
+  document.getElementById("turnoTotal").textContent =
+    (turno === "desayuno" ? "Desayuno" : "Almuerzo") + ": " + platos + " platos · " + colones(tot) +
+    " · Día completo " + colones(ventasFecha(fecha));
+  renderVentasExtra();
+}
+
+function renderVentasExtra() {
+  const d = todayISO();
+  const items = (S.ventasExtra || []).filter(v => v.fecha === d);
+  const box = document.getElementById("vtLista");
+  if (!items.length) { box.innerHTML = ""; return; }
+  const labels = { dia: "Día", desayuno: "Desayuno", almuerzo: "Almuerzo" };
+  box.innerHTML = items.map(v => `<div class="row"><span>${labels[v.turno] || v.turno}${v.nota ? " · " + v.nota : ""}</span>
+    <span><b class="up">${colones(v.monto)}</b> <button class="del" data-vt="${v.id}">✕</button></span></div>`).join("");
+}
+
+document.getElementById("menu").addEventListener("click", e => {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+  const fecha = todayISO();
+  const rec = line(fecha, turno, btn.dataset.id);
+  if (btn.dataset.q) rec.qty = Math.max(0, rec.qty + (btn.dataset.q === "+" ? 1 : -1));
+  if (btn.dataset.ex) rec.extras = Math.max(0, rec.extras + (btn.dataset.ex === "+" ? 1 : -1));
+  persist(); render();
+});
+
+function renderGastos() {
+  document.getElementById("fijosBox").innerHTML = [
+    ["Luz", FIJOS.luz], ["Municipalidad", FIJOS.municipalidad], ["Gas", FIJOS.gas],
+    ["Salarios (3 × ₡125 mil/sem)", FIJOS.salarios], ["Días libres", FIJOS.diasLibres]
+  ].map(([k, v]) => `<div class="row"><span>${k}</span><b>${colones(v)}</b></div>`).join("") +
+    `<div class="row"><span>Total fijos al mes</span><b>${colones(Object.values(FIJOS).reduce((a,b)=>a+b,0))}</b></div>`;
+  const list = S.gastos.slice().sort((a, b) => b.fecha.localeCompare(a.fecha));
+  document.getElementById("gLista").innerHTML = list.length
+    ? `<table>${list.map(g => `<tr><td>${g.fecha.slice(8,10)}/${g.fecha.slice(5,7)}<br><span class="muted">${g.tipo}</span></td>
+        <td>${g.nota || "—"}</td><td>${colones(g.monto)}</td>
+        <td><button class="del" data-g="${g.id}">✕</button></td></tr>`).join("")}</table>`
+    : '<p class="muted">Todavía no hay gastos variables.</p>';
+}
+
+function renderFiados() {
+  const deben = S.fiados.reduce((a, f) => a + f.saldo, 0);
+  document.getElementById("fiadosLista").innerHTML =
+    `<p><b>Te deben ${colones(deben)}</b> <span class="muted">(no está en la caja hasta que paguen)</span></p>` +
+    (S.fiados.length ? S.fiados.map(f => `<div class="row">
+      <div><b>${f.nombre}</b><br><span class="muted">${f.nota || ""} · ${f.fecha}</span></div>
+      <div><b>${colones(f.saldo)}</b><br>
+        ${f.saldo > 0 ? `<button class="ghost" style="width:auto;margin:4px 0" data-pay="${f.id}">Abonó</button>` : "Pagado"}
+        <button class="del" data-fid="${f.id}">✕</button>
+      </div></div>`).join("") : '<p class="muted">Nadie debe en este momento.</p>');
+}
+
+function renderNumeros() {
+  const c = calc();
+  const sem = rango === "semana" || rango === "hoy";
+  const tit = { hoy: "hoy", semana: "esta semana", quin: "esta quincena", mes: "este mes" }[rango];
+  document.getElementById("balanza").innerHTML = `
+    <strong>Cómo va ${tit}</strong>
+    <div class="row"><span>Ventas</span><b class="up">${colones(c.ventas)}</b></div>
+    <div class="row"><span>− Suministros</span><b class="down">${colones(c.suministros)}</b></div>
+    <div class="row"><span>− Gastos fijos (luz, gas, muni, salarios, días libres)</span><b class="down">${colones(c.fijos)}</b></div>
+    <div class="row"><span>− Imprevistos</span><b class="down">${colones(c.imprevistos)}</b></div>
+    <div class="row"><span>− Otros</span><b class="down">${colones(c.otros)}</b></div>
+    <div class="row"><span><b>Ganancia de la soda</b></span><b class="${c.operativa>=0?"up":"down"}">${colones(c.operativa)}</b></div>
+    <div class="row"><span>− Guardar aguinaldo</span><b>${colones(c.agui)}</b></div>
+    <div class="row"><span>− Tu salario</span><b>${colones(c.dueno)}</b></div>
+    <div class="row"><span><b>Para reinvertir / ahorro soda</b></span><b class="${c.reinversion>=0?"up":"down"}">${colones(c.reinversion)}</b></div>
+    <div class="row"><span>Fiados (te deben)</span><b>${colones(c.deben)}</b></div>`;
+  const sumSem = rango === "hoy" ? gastosRango("suministro") * 7 : (rango === "semana" ? gastosRango("suministro") : gastosRango("suministro") / Math.max(1, todayISO().slice(8,10)/7));
+  const s = rango === "semana" ? c.suministros : (rango === "mes" ? c.suministros / (Number(todayISO().slice(8,10))/7 || 1) : c.suministros);
+  let aviso = "";
+  if (rango === "semana") {
+    aviso = c.suministros < 500000
+      ? `<div class="ok">Suministros de la semana ${colones(c.suministros)}. Tu rango normal es ₡500 mil–₡600 mil.</div>`
+      : c.suministros <= 600000
+      ? `<div class="ok">Suministros dentro de temporada: ${colones(c.suministros)}.</div>`
+      : `<div class="warn">Suministros arriba de ₡600 mil (${colones(c.suministros)}). Revisa facturas o merma.</div>`;
+  }
+  document.getElementById("metas").innerHTML = `
+    <strong>Regla de lo que queda</strong>
+    <p class="muted">1) Aguinaldo: ₡1.500.000 al año → guarda ${colones(AGUINALDO_MES)} cada mes.<br>
+    2) Tu salario: ${colones(SUELDO_DUENO)} al mes, si la soda da.<br>
+    3) Lo que sobre: ahorro o reinversión de la soda.<br>
+    3 trabajadoras × ₡125.000 por semana = ₡1.500.000 al mes, más ₡120.000 de días libres.</p>${aviso}`;
+  const by = {};
+  fechasRango().forEach(f => {
+    const d = S.conteos[f]; if (!d) return;
+    ["desayuno","almuerzo"].forEach(t => {
+      Object.keys(d[t]||{}).forEach(id => {
+        const it = itemById(t, id); if (!it) return;
+        by[it.n] = (by[it.n] || 0) + ventaLinea(t, id, d[t][id]);
+      });
+    });
+  });
+  (S.ventasExtra || []).filter(v => fechasRango().includes(v.fecha)).forEach(v => {
+    const k = "Corte total" + (v.turno === "dia" ? "" : " · " + v.turno);
+    by[k] = (by[k] || 0) + v.monto;
+  });
+  const rows = Object.entries(by).sort((a, b) => b[1] - a[1]);
+  document.getElementById("ventasCat").innerHTML = "<strong>Qué se vendió</strong>" + (rows.length
+    ? rows.map(([k,v]) => `<div class="row"><span>${k}</span><b>${colones(v)}</b></div>`).join("")
+    : '<p class="muted">Anota platos en Hoy para ver el desglose.</p>');
+}
+
+function renderFacturas() {
+  document.getElementById("faLista").innerHTML = S.facturas.length
+    ? S.facturas.map(f => `<div class="row"><div><b>${f.proveedor}</b><br><span class="muted">${f.fecha}${f.texto ? " · " + f.texto.slice(0,40) : ""}</span></div>
+        <div><b>${colones(f.monto)}</b> <button class="del" data-fa="${f.id}">✕</button></div></div>`).join("")
+    : '<p class="muted">Sin facturas todavía.</p>';
+}
+
+function render() {
+  renderHero(); renderMenu(); renderGastos(); renderFiados(); renderNumeros(); renderFacturas();
+  document.getElementById("nombre").value = S.nombre;
+  document.getElementById("correo").value = S.correo || "";
+  document.getElementById("correoHint").innerHTML =
+    "Facturas de <b>" + (S.correo || "") + "</b>. Safari no puede entrar solo al Gmail (Apple no lo permite sin Google). " +
+    "Cuando te llegue la factura: ábrela en Gmail → toca el XML o PDF → <b>Compartir / Guardar en Archivos</b> (o la foto en Galería). " +
+    "Luego aquí: <b>Elegir de galería o Archivos</b>. El XML de Hacienda se analiza solo. Nunca pidas ni pegues la contraseña.";
+}
+
+document.getElementById("rangos").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  rango = b.dataset.r; render();
+  [...e.currentTarget.children].forEach(x => x.classList.toggle("on", x === b));
+});
+document.getElementById("turnoSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  turno = b.dataset.t; renderMenu();
+  [...e.currentTarget.children].forEach(x => x.classList.toggle("on", x === b));
+});
+document.querySelector(".dock").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const id = b.dataset.v;
+  ["hoy","gastos","fiados","numeros","mas"].forEach(v => {
+    document.getElementById("v-" + v).hidden = v !== id;
+  });
+  [...e.currentTarget.children].forEach(x => x.classList.toggle("on", x === b));
+});
+
+document.getElementById("gFecha").value = todayISO();
+document.getElementById("faFecha").value = todayISO();
+document.getElementById("vtSave").onclick = () => {
+  const monto = Number(document.getElementById("vtMonto").value);
+  if (!monto) return alert("Escribe el total vendido.");
+  if (!S.ventasExtra) S.ventasExtra = [];
+  S.ventasExtra.unshift({
+    id: uid(),
+    fecha: todayISO(),
+    turno: document.getElementById("vtTurno").value,
+    monto,
+    nota: document.getElementById("vtNota").value.trim()
+  });
+  document.getElementById("vtMonto").value = "";
+  document.getElementById("vtNota").value = "";
+  persist(); render();
+};
+document.getElementById("vtLista").addEventListener("click", e => {
+  const id = e.target.dataset.vt; if (!id) return;
+  S.ventasExtra = S.ventasExtra.filter(v => v.id !== id);
+  persist(); render();
+});
+document.getElementById("gSave").onclick = () => {
+  const monto = Number(document.getElementById("gMonto").value);
+  if (!monto) return alert("Escribe el monto.");
+  S.gastos.unshift({
+    id: uid(), fecha: document.getElementById("gFecha").value || todayISO(),
+    tipo: document.getElementById("gTipo").value,
+    monto, nota: document.getElementById("gNota").value.trim()
+  });
+  document.getElementById("gMonto").value = "";
+  document.getElementById("gNota").value = "";
+  persist(); render();
+};
+document.getElementById("gLista").addEventListener("click", e => {
+  const id = e.target.dataset.g; if (!id) return;
+  S.gastos = S.gastos.filter(g => g.id !== id); persist(); render();
+});
+document.getElementById("fSave").onclick = () => {
+  const monto = Number(document.getElementById("fMonto").value);
+  const nombre = document.getElementById("fNombre").value.trim();
+  if (!nombre || !monto) return alert("Nombre y monto.");
+  S.fiados.unshift({ id: uid(), nombre, monto, saldo: monto, fecha: todayISO(), nota: document.getElementById("fNota").value.trim() });
+  document.getElementById("fNombre").value = "";
+  document.getElementById("fMonto").value = "";
+  document.getElementById("fNota").value = "";
+  persist(); render();
+};
+document.getElementById("fiadosLista").addEventListener("click", e => {
+  if (e.target.dataset.fid) {
+    S.fiados = S.fiados.filter(f => f.id !== e.target.dataset.fid); persist(); render(); return;
+  }
+  if (e.target.dataset.pay) {
+    const f = S.fiados.find(x => x.id === e.target.dataset.pay);
+    const n = Number(prompt("¿Cuánto abonó?", f.saldo));
+    if (!n) return;
+    f.saldo = Math.max(0, f.saldo - n); persist(); render();
+  }
+});
+function xmlTag(doc, name) {
+  const els = doc.getElementsByTagName(name);
+  if (els[0] && els[0].textContent) return els[0].textContent.trim();
+  const all = doc.getElementsByTagName("*");
+  for (let i = 0; i < all.length; i++) {
+    if (all[i].localName === name && all[i].textContent) return all[i].textContent.trim();
+  }
+  return "";
+}
+function parseHaciendaXML(text) {
+  const doc = new DOMParser().parseFromString(text, "text/xml");
+  if (doc.querySelector("parsererror")) return null;
+  const total = xmlTag(doc, "TotalComprobante") || xmlTag(doc, "TotalFactura");
+  const emisores = [...doc.getElementsByTagName("*")].filter(e => e.localName === "Emisor");
+  let nombre = "";
+  if (emisores[0]) {
+    const n = [...emisores[0].getElementsByTagName("*")].find(e => e.localName === "Nombre");
+    if (n) nombre = n.textContent.trim();
+  }
+  if (!nombre) nombre = xmlTag(doc, "Nombre");
+  const fecha = (xmlTag(doc, "FechaEmision") || "").slice(0, 10);
+  const clave = xmlTag(doc, "Clave");
+  const monto = Number(String(total).replace(",", "."));
+  if (!monto) return null;
+  return { proveedor: nombre || "Emisor Hacienda", monto, fecha: fecha || todayISO(), texto: clave ? "Clave " + clave : "XML Hacienda" };
+}
+function leerMontoTexto(t) {
+  const cr = [...t.matchAll(/(\d{1,3}(?:\.\d{3})+)(?:[.,](\d{2}))?/g)].map(m => {
+    const whole = Number(m[1].replace(/\./g, ""));
+    return m[2] ? whole + Number(m[2]) / 100 : whole;
+  });
+  const plain = [...t.matchAll(/(?:₡\s*)?(\d{4,8})(?:[.,]\d{2})?/g)].map(m => Number(m[1]));
+  const all = [...cr, ...plain].filter(n => n >= 500 && n < 50000000);
+  return all.sort((a, b) => b - a)[0];
+}
+function extraerDeOCR(text) {
+  const lines = text.split(/\n/).map(l => l.trim()).filter(Boolean);
+  const skip = /factura|electr[oó]nica|hacienda|comprobante|total|fecha|clave|cliente|receptor|impuesto|iva|subtotal/i;
+  let proveedor = "";
+  for (const l of lines) {
+    if (l.length > 4 && !skip.test(l) && /[a-záéíóúñ]/i.test(l)) { proveedor = l.slice(0, 60); break; }
+  }
+  let fecha = todayISO();
+  const iso = text.match(/(\d{4}-\d{2}-\d{2})/);
+  const dmy = text.match(/(\d{2})[/.](\d{2})[/.](\d{4})/);
+  if (iso) fecha = iso[1];
+  else if (dmy) fecha = dmy[3] + "-" + dmy[2] + "-" + dmy[1];
+  return { proveedor: proveedor || "Factura (foto)", monto: leerMontoTexto(text), fecha, texto: text.replace(/\s+/g, " ").slice(0, 400) };
+}
+function loadTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  return new Promise((res, rej) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js";
+    s.onload = () => res(window.Tesseract);
+    s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+function archivoADataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+async function ocrFoto(dataUrl) {
+  const T = await loadTesseract();
+  const worker = await T.createWorker("spa");
+  try {
+    const { data } = await worker.recognize(dataUrl);
+    return data.text || "";
+  } finally {
+    await worker.terminate();
+  }
+}
+async function leerFotoFactura(f) {
+  document.getElementById("faArchivoNom").textContent = "Leyendo la foto de la galería…";
+  const dataUrl = await archivoADataURL(f);
+  fotoData = dataUrl;
+  try {
+    const text = await ocrFoto(dataUrl);
+    const info = extraerDeOCR(text);
+    if (info.monto) aplicarFacturaLeida(info, f.name);
+    else {
+      document.getElementById("faTexto").value = info.texto || "";
+      document.getElementById("faArchivoNom").textContent = "Vi la foto pero no el total. Escríbelo abajo.";
+    }
+  } catch (err) {
+    document.getElementById("faArchivoNom").textContent = "No pude leer la foto. Escribe proveedor y monto a mano.";
+  }
+}
+function aplicarFacturaLeida(info, nombreArchivo) {
+  if (!info) return;
+  if (info.proveedor) document.getElementById("faProv").value = info.proveedor;
+  if (info.monto) document.getElementById("faMonto").value = Math.round(info.monto);
+  if (info.fecha) document.getElementById("faFecha").value = info.fecha;
+  if (info.texto) document.getElementById("faTexto").value = info.texto;
+  document.getElementById("faArchivoNom").textContent = "Listo: " + (nombreArchivo || "archivo leído");
+}
+function handleFacturaFile(f) {
+  if (!f) return;
+  document.getElementById("faArchivoNom").textContent = "Leyendo " + f.name + "…";
+  const name = (f.name || "").toLowerCase();
+  const type = f.type || "";
+  if (name.endsWith(".xml") || type.includes("xml")) {
+    const r = new FileReader();
+    r.onload = () => {
+      const info = parseHaciendaXML(String(r.result));
+      if (info) aplicarFacturaLeida(info, f.name);
+      else {
+        const n = leerMontoTexto(String(r.result));
+        if (n) document.getElementById("faMonto").value = n;
+        document.getElementById("faArchivoNom").textContent = "XML leído. Revisa el monto.";
+      }
+    };
+    r.readAsText(f);
+    return;
+  }
+  if (type.startsWith("image/") || name.match(/\.(jpg|jpeg|png|heic|webp)$/)) {
+    leerFotoFactura(f);
+    return;
+  }
+  const r = new FileReader();
+  r.onload = () => {
+    fotoData = "";
+    const t = String(r.result || "");
+    const n = leerMontoTexto(t);
+    if (n) document.getElementById("faMonto").value = n;
+    document.getElementById("faTexto").value = (f.name + "\n" + t).slice(0, 400);
+    document.getElementById("faArchivoNom").textContent = "Archivo cargado. Completa el monto si falta.";
+  };
+  r.readAsText(f);
+}
+
+document.getElementById("btnGaleria").onclick = () => document.getElementById("faGaleria").click();
+document.getElementById("btnCamara").onclick = () => document.getElementById("faCamara").click();
+document.getElementById("faGaleria").onchange = e => {
+  [...e.target.files].forEach(handleFacturaFile);
+  e.target.value = "";
+};
+document.getElementById("faCamara").onchange = e => {
+  handleFacturaFile(e.target.files[0]);
+  e.target.value = "";
+};
+document.getElementById("faLeer").onclick = () => {
+  const t = document.getElementById("faTexto").value;
+  const xml = parseHaciendaXML(t);
+  if (xml) { aplicarFacturaLeida(xml, "texto pegado"); return; }
+  const best = leerMontoTexto(t);
+  if (best) document.getElementById("faMonto").value = best;
+  else alert("No encontré un monto claro. Escríbelo a mano.");
+};
+document.getElementById("faSave").onclick = () => {
+  const monto = Number(document.getElementById("faMonto").value);
+  const proveedor = document.getElementById("faProv").value.trim() || "Factura";
+  if (!monto) return alert("Monto de la factura.");
+  const fa = {
+    id: uid(), proveedor, monto,
+    fecha: document.getElementById("faFecha").value || todayISO(),
+    texto: document.getElementById("faTexto").value.trim().slice(0, 400),
+    foto: fotoData ? fotoData.slice(0, 200000) : ""
+  };
+  S.facturas.unshift(fa);
+  if (document.getElementById("faGasto").checked) {
+    S.gastos.unshift({ id: uid(), fecha: fa.fecha, tipo: "suministro", monto, nota: "Factura " + proveedor, facturaId: fa.id });
+  }
+  fotoData = "";
+  document.getElementById("faProv").value = "";
+  document.getElementById("faMonto").value = "";
+  document.getElementById("faTexto").value = "";
+  document.getElementById("faArchivoNom").textContent = "Guardada.";
+  persist(); render();
+};
+document.getElementById("faLista").addEventListener("click", e => {
+  const id = e.target.dataset.fa; if (!id) return;
+  S.facturas = S.facturas.filter(f => f.id !== id);
+  S.gastos = S.gastos.filter(g => g.facturaId !== id);
+  persist(); render();
+});
+document.getElementById("saveNom").onclick = () => {
+  S.nombre = document.getElementById("nombre").value.trim() || "El Mango";
+  S.correo = document.getElementById("correo").value.trim() || "moraj18122000@gmail.com";
+  persist(); render();
+};
+document.getElementById("exportar").onclick = () => {
+  const lines = ["tipo,fecha,detalle,monto"];
+  fechasRango();
+  Object.keys(S.conteos).forEach(f => {
+    lines.push(`venta,${f},dia,${ventasFecha(f)}`);
+  });
+  S.gastos.forEach(g => lines.push(`gasto,${g.fecha},${g.tipo} ${g.nota},${g.monto}`));
+  S.fiados.forEach(f => lines.push(`fiado,${f.fecha},${f.nombre},${f.saldo}`));
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv" }));
+  a.download = "soda-finanzas.csv"; a.click();
+};
+document.getElementById("borrar").onclick = () => {
+  if (!confirm("¿Borrar todo en este teléfono?")) return;
+  localStorage.removeItem(KEY); location.reload();
+};
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+render();
+</script>
+</body>
+</html>
