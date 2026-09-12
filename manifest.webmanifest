@@ -1,0 +1,8 @@
+{
+  "name": "El Mango Finanzas",
+  "short_name": "El Mango",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f3efe6",
+  "theme_color": "#f3efe6"
+}
